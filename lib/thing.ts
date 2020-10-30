@@ -1,28 +1,24 @@
-import Property, { PropertyDescriptor } from "./property.ts";
+import Property from "./property.ts";
 import Action from "./action.ts";
+import { default as ThingJSON } from "../interface/Thing.ts";
+import {
+  NoSecurityScheme,
+  SecuritySchemeScheme,
+} from "../interface/SecurityScheme.ts";
+import DataSchema from "../interface/DataSchema.ts";
 
 export interface ThingDescriptor {
   id: string;
   title: string;
   atType?: string;
   description?: string;
-  properties?: Record<string, PropertyDescriptor>;
+  properties?: Record<string, DataSchema>;
   actions?: Action[];
-}
-
-export interface ThingJSON {
-  "@context": string;
-  "@type": string;
-  id: string;
-  title: string;
-  titles?: string[];
-  description?: string;
-  descriptions?: string[];
 }
 
 function buildProperties(
   thing: Thing,
-  properties: Record<string, PropertyDescriptor>,
+  properties: Record<string, DataSchema>
 ): Record<string, Property> {
   const result: Record<string, Property> = {};
   for (let [name, descriptor] of Object.entries(properties)) {
@@ -34,6 +30,7 @@ function buildProperties(
 export default class Thing {
   protected actions: Action[];
   protected properties: Record<string, Property>;
+  protected eventsQueue: Set<Event> = new Set();
 
   constructor(protected descriptor: ThingDescriptor) {
     this.properties = descriptor.properties
@@ -54,18 +51,41 @@ export default class Thing {
     return this.descriptor.description;
   }
 
+  public getProperties(): Record<string, DataSchema> | undefined {
+    return this.descriptor.properties;
+  }
+
+  public propertiesToJSON(
+    path: string = "/"
+  ): Record<string, DataSchema> | undefined {
+    if (this.properties && Object.keys(this.properties).length) {
+      const result: Record<string, DataSchema> = {};
+      for (let [name, property] of Object.entries(this.properties)) {
+        result[name] = property.toJSON();
+        result[name].links = [{ href: path + "properties/" + name }];
+      }
+      return result;
+    }
+  }
+
   public getAtType(): string {
     return this.descriptor.atType || "Thing";
   }
 
-  public toJSON(): ThingJSON {
+  public toJSON(path: string = "/"): ThingJSON {
     const description = this.getDescription();
+    const properties = this.propertiesToJSON(path);
     return {
       "@context": "https://www.w3.org/2019/wot/td/v1",
       "@type": this.getAtType(),
       id: this.getId(),
       title: this.getTitle(),
       description,
+      properties,
+      security: "somesec",
+      securityDefinitions: {
+        somesec: { scheme: SecuritySchemeScheme.NOSEC } as NoSecurityScheme,
+      },
     };
   }
 }

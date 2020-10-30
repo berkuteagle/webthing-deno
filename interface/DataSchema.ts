@@ -1,6 +1,7 @@
+import Link from "./Link.ts";
 import MultiLanguage from "./MultiLanguage.ts";
 
-export enum DataSchemeType {
+export enum DataSchemaType {
   OBJECT = "object",
   ARRAY = "array",
   STRING = "string",
@@ -16,7 +17,7 @@ export default interface DataSchema {
   titles?: MultiLanguage;
   description?: string;
   descriptions?: MultiLanguage;
-  type?: DataSchemeType;
+  type?: DataSchemaType;
   const?: any;
   unit?: string;
   oneOf?: DataSchema[];
@@ -24,41 +25,42 @@ export default interface DataSchema {
   readOnly?: boolean;
   writeOnly?: boolean;
   format?: string;
+  links?: Link[];
 }
 
 export interface ArraySchema extends DataSchema {
   items?: DataSchema | DataSchema[];
   minItems?: number;
   maxItems?: number;
-  type: DataSchemeType.ARRAY;
+  type: DataSchemaType.ARRAY;
 }
 
 export interface BooleanSchema extends DataSchema {
-  type: DataSchemeType.BOOLEAN;
+  type: DataSchemaType.BOOLEAN;
 }
 
 export interface NumberSchema extends DataSchema {
-  type: DataSchemeType.NUMBER;
+  type: DataSchemaType.NUMBER;
   minimum?: number;
   maximum?: number;
 }
 
 export interface IntegerSchema extends DataSchema {
-  type: DataSchemeType.INTEGER;
+  type: DataSchemaType.INTEGER;
   minimum?: number;
   maximum?: number;
 }
 
 export interface ObjectSchema extends DataSchema {
-  type: DataSchemeType.OBJECT;
+  type: DataSchemaType.OBJECT;
   properties?: Record<string, DataSchema>;
   required?: string[];
 }
 
 export interface StringSchema extends DataSchema {
-  type: DataSchemeType.STRING;
+  type: DataSchemaType.STRING;
 }
 
 export interface NullSchema extends DataSchema {
-  type: DataSchemeType.NULL;
+  type: DataSchemaType.NULL;
 }
