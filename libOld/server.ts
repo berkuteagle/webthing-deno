@@ -13,12 +13,12 @@ function createRouter(thing: Thing): Router {
 }
 
 export default class Server {
-  private http_port: number = 80;
-  private https_port: number = 443;
+  private http_port = 80;
+  private https_port = 443;
 
   constructor(private thing: Thing) {}
 
-  public setPorts(http: number = 80, https: number = 443): Server {
+  public setPorts(http = 80, https = 443): Server {
     this.http_port = http;
     this.https_port = https;
     return this;

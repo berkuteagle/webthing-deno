@@ -1,0 +1,2 @@
+set autowriteall
+colorscheme darcula

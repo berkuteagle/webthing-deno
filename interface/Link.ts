@@ -1,6 +1,5 @@
 export default interface Link {
-  href: string;
-  type?: string;
+  href?: string;
   rel?: string;
-  anchor?: string;
+  mediaType?: string;
 }

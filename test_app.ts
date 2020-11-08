@@ -10,8 +10,8 @@ new Server(
     properties: {
       level: getNumberPropertyDescriptor(0, 300),
     },
-    actions: [new Action()],
-  })
+    actions: [new Action(), new Action()],
+  }),
 )
   .setPorts(8080, 8443)
   .run();
