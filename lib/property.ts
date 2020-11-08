@@ -1,21 +1,16 @@
-import { Evt } from "./deps.ts";
+import Value from "./value.ts";
 
-export default class Property<TValue> {
-  private $evt: Evt<TValue>;
-  constructor(private $value: TValue) {
-    this.$evt = new Evt<TValue>();
+type TValueType = number | string | boolean;
+
+export default class Property<
+  TValue extends Value<number> | Value<string> | Value<boolean>,
+> {
+  constructor(private value: TValue) {
   }
 
-  get value(): TValue {
-    return this.$value;
-  }
-
-  set value(val: TValue) {
-    this.$value = val;
-    this.$evt.post(val);
-  }
-
-  onValue(callback: (data: TValue) => void): void {
-    this.$evt.attach(callback);
+  async *getValueChangeEvents(): AsyncIterableIterator<string> {
+    for await (const ev of this.value.getEvents()) {
+      yield JSON.stringify({ type: "ValueChanged", data: ev });
+    }
   }
 }

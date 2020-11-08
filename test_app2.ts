@@ -8,7 +8,7 @@ const myProperty = new Property<boolean>(false);
 myThing.addProperty<boolean>("switch", myProperty);
 
 class MyAction extends Action<boolean, boolean> {
-  private $timeout: number = 0;
+  private $timeout = 0;
   $execute(): Deferred<boolean> {
     const def = deferred<boolean>();
 

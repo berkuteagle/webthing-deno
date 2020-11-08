@@ -1,7 +1,7 @@
-import Thing from "./lib/thing.ts";
-import Server from "./lib/server.ts";
-import { getNumberPropertyDescriptor } from "./lib/property.ts";
-import Action from "./lib/action.ts";
+import Thing from "./libOld/thing.ts";
+import Server from "./libOld/server.ts";
+import { getNumberPropertyDescriptor } from "./libOld/property.ts";
+import Action from "./libOld/action.ts";
 
 new Server(
   new Thing({
