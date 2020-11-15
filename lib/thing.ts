@@ -15,9 +15,6 @@ export default class Thing {
   addProperty<TValue>(name: string, property: Property<TValue>): void {
     this.$properties.add(property);
     this.$propNames.set(property, name);
-    property.onValue((value) => {
-      console.log(`from thing event listener ${value}`);
-    });
   }
 
   addAction(name: string, ctor: typeof Action): void {
