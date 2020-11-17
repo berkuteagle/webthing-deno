@@ -21,6 +21,7 @@ class FadeAction extends Action<number, number> {
       this.$timer = setTimeout(() => {
         console.log("action_done_with_" + data);
         this.$prop.setValue(data);
+        resolve();
       }, data);
     });
   }
@@ -35,13 +36,13 @@ class FadeAction extends Action<number, number> {
 
 const a1 = new FadeAction(p1);
 
-// setInterval(() => {
-//   v1.value++;
-// }, 300);
+setInterval(() => {
+  v1.value++;
+}, 300);
 
-// setInterval(() => {
-//   v2.value = !v2.value;
-// }, 500);
+setInterval(() => {
+  v2.value = !v2.value;
+}, 500);
 
 const mux = new MuxAsyncIterator<string>();
 mux.add(p1.getValueChangeEvents());

@@ -1,20 +1,21 @@
-import { MuxAsyncIterator } from "./deps.ts";
-
 export default class Value<T> {
   private currentValue: T;
-  private queue: T[];
-  private callback: (event: T) => void;
+  private stream: ReadableStream;
+  private controller: ReadableStreamDefaultController | null = null;
 
   constructor(value: T) {
     this.currentValue = value;
-    this.queue = [value];
-    this.callback = () => {};
+    this.stream = new ReadableStream<T>({
+      start: (controller) => {
+        this.controller = controller;
+        controller.enqueue(value);
+      },
+    });
   }
 
   set value(val: T) {
     this.currentValue = val;
-    this.queue.push(val);
-    this.callback(val);
+    this.controller?.enqueue(val);
   }
 
   get value(): T {
@@ -22,25 +23,7 @@ export default class Value<T> {
   }
 
   getEvents() {
-    const mux = new MuxAsyncIterator<T>();
-    mux.add(this.getEventsInQueue());
-    mux.add(this.getEventsInFuture());
-    return mux;
-  }
-
-  private async *getEventsInFuture(): AsyncIterableIterator<T> {
-    while (true) {
-      const event = await new Promise<T>((resolve) => {
-        this.callback = resolve;
-      });
-      yield event;
-    }
-  }
-
-  private async *getEventsInQueue(): AsyncIterableIterator<T> {
-    for (const ev of this.queue) {
-      yield Promise.resolve(ev);
-    }
+    return this.stream.getIterator();
   }
 }
 

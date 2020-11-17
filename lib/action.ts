@@ -9,9 +9,10 @@ export enum ActionStatus {
 }
 
 export default abstract class Action<TExecute, TCancel> {
-  private $status: ActionStatus = ActionStatus.created;
   private $pending: Deferred<void>;
-  private callback: (status: ActionStatus) => void;
+  private currentStatus: ActionStatus = ActionStatus.created;
+  private stream: ReadableStream<ActionStatus>;
+  private controller: ReadableStreamDefaultController | null = null;
 
   constructor() {
     this.$pending = deferred<void>();
@@ -24,7 +25,15 @@ export default abstract class Action<TExecute, TCancel> {
         this.status = ActionStatus.cancelled;
       }
     });
-    this.callback = () => {};
+    this.stream = new ReadableStream<ActionStatus>({
+      start: (controller) => {
+        this.controller = controller;
+        controller.enqueue(this.currentStatus);
+      },
+      cancel: () => {
+        this.controller = null;
+      },
+    });
   }
 
   async execute(data: TExecute): Promise<void> {
@@ -52,23 +61,27 @@ export default abstract class Action<TExecute, TCancel> {
   }
 
   get status(): ActionStatus {
-    return this.$status;
+    return this.currentStatus;
   }
 
   set status(stat: ActionStatus) {
-    this.$status = stat;
-    this.callback(stat);
+    this.currentStatus = stat;
+    this.controller?.enqueue(stat);
+    if (
+      stat === ActionStatus.finished ||
+      stat === ActionStatus.cancelled ||
+      stat === ActionStatus.error
+    ) {
+      this.controller?.close();
+    }
   }
 
   protected abstract async $execute(data: TExecute): Promise<void>;
   protected abstract async $cancel(data: TCancel): Promise<void>;
 
   async *getActionStatusEvents(): AsyncIterableIterator<string> {
-    while (true) {
-      const status = await new Promise<ActionStatus>((resolve) => {
-        this.callback = resolve;
-      });
-      yield JSON.stringify({ type: "ActionStatusChanged", data: status });
+    for await (const ev of this.stream.getIterator()) {
+      yield JSON.stringify({ type: "ActionStatusChanged", data: ev });
     }
   }
 }
